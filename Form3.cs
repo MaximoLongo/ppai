@@ -56,13 +56,14 @@ namespace ppai
             MessageBox.Show("Vino guardado");
             bodegaSeleccionada = (Bodega)comboBox1.SelectedItem;
 
+            bodegaSeleccionada.Vinos.Add(vinoTemporal);
+
             // Cerrar la ventana
             this.Close();
 
-            ActualizarBodega actualizarBodega = new ActualizarBodega(listaBodegas);
+            
 
-            // Mostrar el formulario de actualización de bodega
-            actualizarBodega.Show();
+            
 
         }
 
