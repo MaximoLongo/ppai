@@ -8,7 +8,7 @@ def inicializar_datos():
     bodega4 = Bodega("Bodega D", "40.7128, -74.0060", "Una bodega histórica", "Historia de la Bodega D", "2026")
     bodega5 = Bodega("Bodega E", "40.7128, -74.0060", "Una bodega histórica", "Historia de la Bodega E", "2026")
 
-    vino1 = Vino("Tu tia 1", 2015, "etiqueta1.jpg", "Cata Bodega A1", 20.0, "pendiente", "2026", bodega1)
+    vino1 = Vino("Vino 1", 2015, "etiqueta1.jpg", "Cata Bodega A1", 20.0, "pendiente", "2026", bodega1)
     vino2 = Vino("Vino 2", 2018, "etiqueta2.jpg", "Cata Bodega A2", 15.0, "actualizado", "2024", bodega1)
     vino3 = Vino("Vino 3", 2017, "etiqueta3.jpg", "Cata Bodega A3", 25.0, "pendiente", "2026", bodega1)
     vino4 = Vino("Vino 4", 2019, "etiqueta4.jpg", "Cata Bodega B1", 18.0, "pendiente", "2026", bodega2)
