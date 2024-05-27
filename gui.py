@@ -229,10 +229,43 @@ class VinoApp:
 
         self.root.attributes("-topmost", False)  # Desactivar ventana principal como "siempre en primer plano"
         nombre = simpledialog.askstring("Actualizar", f"Nuevo nombre para {vino_seleccionado.nombre} (dejar en blanco para mantener actual):", parent=self.root)
-        anada = simpledialog.askinteger("Actualizar", f"Nuevo año para {vino_seleccionado.nombre} (dejar en blanco para mantener actual):", parent=self.root)
+        if nombre is None:
+            self.root.attributes("-topmost", True)
+            return
+        anada = simpledialog.askstring("Actualizar", f"Nuevo año para {vino_seleccionado.nombre} (dejar en blanco para mantener actual):", parent=self.root)
+        if anada is None:
+            self.root.attributes("-topmost", True)
+            return
+        while anada.isdigit()==False and anada!="":
+            messagebox.showerror("Error", "El año debe ser un número entero.")
+            anada = simpledialog.askstring("Actualizar", f"Nuevo año para {vino_seleccionado.nombre} (dejar en blanco para mantener actual):", parent=self.root)
+            if anada is None:
+                self.root.attributes("-topmost", True)
+                return
         imagen_etiqueta = simpledialog.askstring("Actualizar", f"Nueva imagen de etiqueta para {vino_seleccionado.nombre} (dejar en blanco para mantener actual):", parent=self.root)
+        if imagen_etiqueta is None:
+            self.root.attributes("-topmost", True)
+            return
         nota_de_cata_bodega = simpledialog.askstring("Actualizar", f"Nueva nota de cata bodega para {vino_seleccionado.nombre} (dejar en blanco para mantener actual):", parent=self.root)
-        precio = simpledialog.askfloat("Actualizar", f"Nuevo precio para {vino_seleccionado.nombre} (dejar en blanco para mantener actual):", parent=self.root)
+        if nota_de_cata_bodega is None:
+            self.root.attributes("-topmost", True)
+            return
+        precio = simpledialog.askstring("Actualizar", f"Nuevo precio para {vino_seleccionado.nombre} (dejar en blanco para mantener actual):", parent=self.root)
+        if precio is None:
+            self.root.attributes("-topmost", True)
+            return
+        def is_float(s):
+            try:
+                float(s)
+                return True
+            except ValueError:
+                return False
+        while is_float(precio)==False and precio!="":
+            messagebox.showerror("Error", "El precio debe ser un número real.")
+            precio = simpledialog.askstring("Actualizar", f"Nuevo precio para {vino_seleccionado.nombre} (dejar en blanco para mantener actual):", parent=self.root)
+            if precio is None:
+                self.root.attributes("-topmost", True)
+                return
         self.root.attributes("-topmost", True)  # Reactivar ventana principal como "siempre en primer plano"
 
         vino_seleccionado.actualizar(
@@ -254,21 +287,67 @@ class VinoApp:
 
         self.root.attributes("-topmost", False)  # Desactivar ventana principal como "siempre en primer plano"
         nombre = simpledialog.askstring("Agregar Vino", "Nombre del vino:", parent=self.root)
-        if not nombre:
-            messagebox.showerror("Error", "El nombre del vino es obligatorio.")
+        if nombre is None:
             self.root.attributes("-topmost", True)
             return
-        
-        anada = simpledialog.askinteger("Agregar Vino", "Año del vino:", parent=self.root)
-        imagen_etiqueta = simpledialog.askstring("Agregar Vino", "Imagen de etiqueta del vino:", parent=self.root)
-        nota_de_cata_bodega = simpledialog.askstring("Agregar Vino", "Nota de cata de la bodega:", parent=self.root)
-        precio = simpledialog.askfloat("Agregar Vino", "Precio del vino:", parent=self.root)
-        self.root.attributes("-topmost", True)  # Reactivar ventana principal como "siempre en primer plano"
-
-        if anada is None or precio is None:
-            messagebox.showerror("Error", "La añada y el precio del vino son obligatorios.")
+        while not nombre:
+            messagebox.showerror("Error", "El nombre del vino es obligatorio.")
+            self.root.attributes("-topmost", True)
+            nombre = simpledialog.askstring("Agregar Vino", "Nombre del vino:", parent=self.root)
+            if nombre is None:
+                self.root.attributes("-topmost", True)
+                return
+        anada = simpledialog.askstring("Agregar Vino", "Año del vino:", parent=self.root)
+        if anada is None:
+            self.root.attributes("-topmost", True)
             return
-
+        while anada.isdigit()==False or not anada:
+            messagebox.showerror("Error", "La añada debe ser un número entero.")
+            self.root.attributes("-topmost", True)
+            anada = simpledialog.askstring("Agregar Vino", "Año del vino:", parent=self.root)
+            if anada is None:
+                self.root.attributes("-topmost", True)
+                return
+        imagen_etiqueta = simpledialog.askstring("Agregar Vino", "Imagen de etiqueta del vino:", parent=self.root)
+        if imagen_etiqueta is None:
+            self.root.attributes("-topmost", True)
+            return
+        while not imagen_etiqueta:
+            messagebox.showerror("Error", "La imagen de etiqueta del vino es obligatoria.")
+            self.root.attributes("-topmost", True)
+            imagen_etiqueta = simpledialog.askstring("Agregar Vino", "Imagen de etiqueta del vino:", parent=self.root)
+            if imagen_etiqueta is None:
+                self.root.attributes("-topmost", True)
+                return
+        nota_de_cata_bodega = simpledialog.askstring("Agregar Vino", "Nota de cata de la bodega:", parent=self.root)
+        if nota_de_cata_bodega is None:
+            self.root.attributes("-topmost", True)
+            return
+        while not nota_de_cata_bodega:
+            messagebox.showerror("Error", "La nota de cata de la bodega es obligatoria.")
+            self.root.attributes("-topmost", True)
+            nota_de_cata_bodega = simpledialog.askstring("Agregar Vino", "Nota de cata de la bodega:", parent=self.root)
+            if nota_de_cata_bodega is None:
+                self.root.attributes("-topmost", True)
+                return
+        precio = simpledialog.askstring("Agregar Vino", "Precio del vino:", parent=self.root)
+        if precio is None:
+            self.root.attributes("-topmost", True)
+            return
+        def is_float(s):
+            try:
+                float(s)
+                return True
+            except ValueError:
+                return False
+        while is_float(precio)==False or not precio:
+            messagebox.showerror("Error", "El precio debe ser un número real.")
+            self.root.attributes("-topmost", True)
+            precio = simpledialog.askstring("Agregar Vino", "Precio del vino:", parent=self.root)
+            if precio is None:
+                self.root.attributes("-topmost", True)
+                return
+        self.root.attributes("-topmost", True)  # Reactivar ventana principal como "siempre en primer plano"
         nuevo_vino = Vino(
             nombre=nombre,
             anada=anada,
