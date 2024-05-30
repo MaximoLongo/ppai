@@ -51,8 +51,6 @@ class ImportarActualizaciónVinosBodega:
         messagebox.showinfo("Información", "Todos los vinos han sido actualizados exitosamente!")
         self.mostrar_vinos()
 
-        messagebox.showinfo("Información", "Vino actualizado exitosamente!")
-        self.mostrar_vinos()
     def show_initial_screen(self):
         # Crear pantalla inicial
         self.clear_frame()
@@ -107,11 +105,29 @@ class ImportarActualizaciónVinosBodega:
         if not bodega_seleccionada:
             messagebox.showerror("Error", "La bodega seleccionada no se encuentra.")
             return
-        
         self.clear_frame()
 
-        self.vinos_frame = tk.Frame(self.root, bg='silver')
-        self.vinos_frame.pack(pady=20, padx=20)
+        # Crear un contenedor de Canvas con scrollbar
+        canvas = tk.Canvas(self.root, bg='silver')
+        scrollbar = tk.Scrollbar(self.root, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg='silver')
+
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(
+                scrollregion=canvas.bbox("all")
+            )
+        )
+
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        # Empaquetar Canvas y scrollbar
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        self.vinos_frame = scrollable_frame
+        
 
         self.vinos_label = tk.Label(self.vinos_frame, text=f"Vinos en {bodega_seleccionada.nombre}:", font=("Helvetica", 16, "bold"), bg='silver', fg='black')
         self.vinos_label.grid(row=0, column=0, columnspan=2, pady=(0, 20))
@@ -200,6 +216,9 @@ class ImportarActualizaciónVinosBodega:
 
         # Mostrar cada vino actualizado
         for vino in bodega_seleccionada.vinos_actualizados:
+
+            
+
             vino_frame = tk.Frame(scrollable_frame, bg='silver', padx=10, pady=5, relief='groove', bd=2)
             vino_frame.pack(fill='x', pady=5)
 
@@ -218,14 +237,32 @@ class ImportarActualizaciónVinosBodega:
             precio_label = tk.Label(vino_frame, text=f"Precio: ${vino.precio}", font=("Helvetica", 12), bg='silver', anchor='center', justify='center')
             precio_label.pack(fill='x')
 
-            nombreVarietal_label = tk.Label(vino_frame, text=f"Nombre Varietal: {vino.nombreVarietal}", font=("Helvetica", 12), bg='silver', anchor='center', justify='center')
-            nombreVarietal_label.pack(fill='x')
+            if isinstance(vino.nombreVarietal, list) and isinstance(vino.porcentajeVarietal, list):
+                if len(vino.nombreVarietal) > 1 and len(vino.porcentajeVarietal) > 1:
+                    varietales = ""
+                    porcentajes = ""
+                    for nombre, porcentaje in zip(vino.nombreVarietal, vino.porcentajeVarietal):
+                        varietales += f"{nombre}, "
+                        porcentajes += f"{porcentaje}%, "
+                    # Remover la coma y el espacio al final de las cadenas
+                    varietales = varietales.rstrip(", ")
+                    porcentajes = porcentajes.rstrip(", ")
+                    
+                    nombreVarietal_label = tk.Label(vino_frame, text=f"Nombre Varietal: {varietales}", font=("Helvetica", 12), bg='silver', anchor='center', justify='center')
+                    nombreVarietal_label.pack()
+                    
+                    porcentajeVarietal_label = tk.Label(vino_frame, text=f"Porcentaje Varietal: {porcentajes}", font=("Helvetica", 12), bg='silver', anchor='center', justify='center')
+                    porcentajeVarietal_label.pack()
+                else:
+                # Manejar el caso donde nombreVarietal y porcentajeVarietal no son listas
+                    nombreVarietal_label = tk.Label(vino_frame, text=f"Nombre Varietal: {vino.nombreVarietal}", font=("Helvetica", 12), bg='silver', anchor='center', justify='center')
+                    nombreVarietal_label.pack()
+    
+                    porcentajeVarietal_label = tk.Label(vino_frame, text=f"Porcentaje Varietal: {vino.porcentajeVarietal}%", font=("Helvetica", 12), bg='silver', anchor='center', justify='center')
+                    porcentajeVarietal_label.pack()
 
-            porcentajeVarietal_label = tk.Label(vino_frame, text=f"Porcentaje Varietal: {vino.porcentajeVarietal}", font=("Helvetica", 12), bg='silver', anchor='center', justify='center')
-            porcentajeVarietal_label.pack(fill='x')
-
-            maridaje_label = tk.Label(vino_frame, text=f"Maridaje: {vino.maridaje}", font=("Helvetica", 12), bg='silver', anchor='center', justify='center')
-            maridaje_label.pack(fill='x')
+        maridaje_label = tk.Label(vino_frame, text=f"Maridaje: {vino.maridaje}", font=("Helvetica", 12), bg='silver', anchor='center', justify='center')
+        maridaje_label.pack(fill='x')
 
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
@@ -252,8 +289,8 @@ class ImportarActualizaciónVinosBodega:
         detalles_vino += f"Imagen de etiqueta: {vino_seleccionado.imagen_etiqueta}\n"
         detalles_vino += f"Nota de cata bodega: {vino_seleccionado.nota_de_cata_bodega}\n"
         detalles_vino += f"Precio: {vino_seleccionado.precio}\n"
-        detalles_vino += f"Nombre Varietal: {vino_seleccionado.nombreVarietal}\n"
-        detalles_vino += f"Porcentaje Varietal: {vino_seleccionado.porcentajeVarietal}\n"
+        for i in range(len(vino_seleccionado.nombreVarietal)):
+            detalles_vino += f"Varietal: {vino_seleccionado.nombreVarietal[i]},con un Porcentaje de:{vino_seleccionado.porcentajeVarietal[i]}\n"
         detalles_vino += f"Maridaje: {vino_seleccionado.maridaje}\n"
     
         # Crear una nueva ventana
@@ -274,40 +311,6 @@ class ImportarActualizaciónVinosBodega:
         # Crear un botón para cerrar la ventana
         close_button = tk.Button(new_window, text="Cerrar", command=new_window.destroy, font=("Helvetica", 14, "bold"), bg='#0051c9', fg='white')
         close_button.pack(pady=10)
-    
-    def actualizar_vino(self):
-        bodega_seleccionada = next((bodega for bodega in self.bodegas if bodega.nombre == self.selected_bodega.get()), None)
-        if not bodega_seleccionada:
-            messagebox.showerror("Error", "La bodega seleccionada no se encuentra.")
-            return
-
-        vino_seleccionado = next((vino for vino in bodega_seleccionada.vinos if vino.nombre == self.selected_vino.get()), None)
-        if not vino_seleccionado:
-            messagebox.showerror("Error", "El vino seleccionado no se encuentra en esta bodega.")
-            return
-
-        self.root.attributes("-topmost", False)  # Desactivar ventana principal como "siempre en primer plano"
-        anada = 1111
-        imagen_etiqueta = 1111
-        nota_de_cata_bodega = 1111
-        precio = 1111
-        nombreVarietal = 1111
-        porcentajeVarietal = 1111
-        maridaje = 1111
-        self.root.attributes("-topmost", True)  # Reactivar ventana principal como "siempre en primer plano"
-
-        vino_seleccionado.actualizar(
-            anada=anada if anada else None,
-            imagen_etiqueta=imagen_etiqueta if imagen_etiqueta else None,
-            nota_de_cata_bodega=nota_de_cata_bodega if nota_de_cata_bodega else None,
-            precio=precio if precio else None,
-            nombreVarietal=nombreVarietal if nombreVarietal else None,
-            porcentajeVarietal=porcentajeVarietal if porcentajeVarietal else None,
-            maridaje=maridaje if maridaje else None
-        )
-
-        messagebox.showinfo("Información", "Vino actualizado exitosamente!")
-        self.mostrar_vinos()
 
     def crearVino(self):
         bodega_seleccionada = next((bodega for bodega in self.bodegas if bodega.nombre == self.selected_bodega.get()), None)
@@ -316,128 +319,66 @@ class ImportarActualizaciónVinosBodega:
             return
 
         self.root.attributes("-topmost", False)  # Desactivar ventana principal como "siempre en primer plano"
-        nombre = simpledialog.askstring("Agregar Vino", "Nombre del vino:", parent=self.root)
-        if nombre is None:
-            self.root.attributes("-topmost", True)
-            return
-        while not nombre:
-            messagebox.showerror("Error", "El nombre del vino es obligatorio.")
-            nombre = simpledialog.askstring("Agregar Vino", "Nombre del vino:", parent=self.root)
-            if nombre is None:
-                self.root.attributes("-topmost", True)
-                return
-        anada = simpledialog.askstring("Agregar Vino", "Año del vino:", parent=self.root)
-        if anada is None:
-            self.root.attributes("-topmost", True)
-            return
-        while not anada or not anada.isdigit() or not (1900 <= int(anada) <= 2024):
-            messagebox.showerror("Error", "El año del vino es obligatorio y debe ser un número entre 1900 y 2024.")
-            anada = simpledialog.askstring("Agregar Vino", "Año del vino:", parent=self.root)
-            if anada is None:
-                self.root.attributes("-topmost", True)
-                return
-        imagen_etiqueta = simpledialog.askstring("Agregar Vino", "Imagen de etiqueta del vino:", parent=self.root)
-        if imagen_etiqueta is None:
-            self.root.attributes("-topmost", True)
-            return
-        while not imagen_etiqueta:
-            messagebox.showerror("Error", "La imagen de etiqueta del vino es obligatoria.")
-            imagen_etiqueta = simpledialog.askstring("Agregar Vino", "Imagen de etiqueta del vino:", parent=self.root)
-            if imagen_etiqueta is None:
-                self.root.attributes("-topmost", True)
-                return
 
+        nombres_vinos = ["Vino A", "Vino B", "Vino C", "Vino D", "Vino E"]
+        imagenes_etiquetas = ["etiqueta1.png", "etiqueta2.png", "etiqueta3.png", "etiqueta4.png", "etiqueta5.png"]
         notas_de_cata = ['Brillante', 'Suave', 'Dulce', 'Ligero', 'Fresco', 'Simple', 'Excelente', 'Bueno', 'Aceptable', 'Deficiente']
-        nota_de_cata_bodega = simpledialog.askstring("Agregar Vino", "Nota de cata de la bodega (Brillante, Suave, Dulce, Ligero, Fresco, Simple, Excelente, Bueno, Aceptable, Deficiente):", parent=self.root)
-        if nota_de_cata_bodega is None:
-            self.root.attributes("-topmost", True)
-            return
-        while not nota_de_cata_bodega or nota_de_cata_bodega not in notas_de_cata:
-            messagebox.showerror("Error", "La nota de cata de la bodega es obligatoria y debe respetar el formato.")
-            nota_de_cata_bodega = simpledialog.askstring("Agregar Vino", "Nota de cata de la bodega (Brillante, Suave, Dulce, Ligero, Fresco, Simple, Excelente, Bueno, Aceptable, Deficiente):", parent=self.root)
-            if nota_de_cata_bodega is None:
-                self.root.attributes("-topmost", True)
-                return
-
-        precio = simpledialog.askstring("Agregar Vino", "Precio del vino:", parent=self.root)
-        if precio is None:
-            self.root.attributes("-topmost", True)
-            return
-        def is_float(num):
-            try:
-                float(num)
-                return True
-            except ValueError:
-                return False
-        while not precio or not is_float(precio) or float(precio) < 0:
-            messagebox.showerror("Error", "El precio del vino es obligatorio y debe ser un número positivo.")
-            precio = simpledialog.askstring("Agregar Vino", "Precio del vino:", parent=self.root)
-            if precio is None:
-                self.root.attributes("-topmost", True)
-                return
-
         varietales = ['Malbec', 'Cabernet Sauvignon', 'Merlot', 'Syrah', 'Chardonnay', 'Torrontés', 'Bonarda', 'Sauvignon Blanc', 'Tannat', 'Pinot Noir']
-        nombre_varietales = []
-        porcentaje_varietales = []
-        total_porcentaje = 0
-
-        while total_porcentaje < 100:
-            nombre_varietal = simpledialog.askstring("Agregar Vino", f"Nombre del Varietal del vino (Malbec, Cabernet Sauvignon, Merlot, Syrah, Chardonnay, Torrontés, Bonarda, Sauvignon Blanc, Tannat, Pinot Noir):", parent=self.root)
-            if nombre_varietal is None:
-                self.root.attributes("-topmost", True)
-                return
-            while not nombre_varietal or nombre_varietal not in varietales:
-                messagebox.showerror("Error", "El nombre del Varietal del vino es obligatorio y debe ser un nombre de Varietal válido.")
-                nombre_varietal = simpledialog.askstring("Agregar Vino", f"Nombre del Varietal del vino (Malbec, Cabernet Sauvignon, Merlot, Syrah, Chardonnay, Torrontés, Bonarda, Sauvignon Blanc, Tannat, Pinot Noir):", parent=self.root)
-                if nombre_varietal is None:
-                    self.root.attributes("-topmost", True)
-                    return
-
-            porcentaje_varietal = simpledialog.askstring("Agregar Vino", "Porcentaje del Varietal del vino:", parent=self.root)
-            if porcentaje_varietal is None:
-                self.root.attributes("-topmost", True)
-                return
-            while not porcentaje_varietal or not is_float(porcentaje_varietal) or not (0 < float(porcentaje_varietal) <= 100 - total_porcentaje):
-                messagebox.showerror("Error", f"El porcentaje del Varietal del vino es obligatorio y debe ser un número entre 0 y {100 - total_porcentaje}.")
-                porcentaje_varietal = simpledialog.askstring("Agregar Vino", "Porcentaje del Varietal del vino:", parent=self.root)
-                if porcentaje_varietal is None:
-                    self.root.attributes("-topmost", True)
-                    return
-
-            nombre_varietales.append(nombre_varietal)
-            porcentaje_varietales.append(float(porcentaje_varietal))
-            total_porcentaje += float(porcentaje_varietal)
-
-            if total_porcentaje < 100:
-                add_more = messagebox.askyesno("Agregar Vino", f"El porcentaje total es {total_porcentaje}%. ¿Desea agregar más varietales?")
-                if not add_more:
-                    break
-
-        if total_porcentaje != 100:
-            messagebox.showerror("Error", "La suma de los porcentajes de varietales debe ser 100%.")
-            self.root.attributes("-topmost", True)
-            return
-
         tipo_maridaje = ['Carnes rojas', 'Quesos maduros', 'Pastas con salsa de tomate', 'Carnes a la parrilla', 'Empanadas de carne', 'Cordero', 'Asado argentino', 'Queso azul', 'Carnes blancas', 'Parrillada mixta']
-        maridaje = simpledialog.askstring("Agregar Vino", "Tipo de maridaje del vino (Carnes rojas, Quesos maduros, Pastas con salsa de tomate, Carnes a la a la parrilla, Empanadas de carne, Cordero, Asado argentino, Queso azul, Carnes blancas, Parrillada mixta")
+
+        cantidad_vinos = random.randint(1, 5)
+
+        for _ in range(cantidad_vinos):
+            nombre = random.choice(nombres_vinos)
+            anada = str(random.randint(1900, 2024))
+            imagen_etiqueta = random.choice(imagenes_etiquetas)
+            nota_de_cata_bodega = random.choice(notas_de_cata)
+            precio = str(round(random.uniform(10, 100), 2))
+
+            nombre_varietales = random.sample(varietales, k=random.randint(1, 5))
+            total_porcentaje = 100
+            porcentaje_varietales = []
+
+            for i in range(len(nombre_varietales) - 1):
+                if i == 0:
+                    if len(nombre_varietales) == 1:
+                        porcentaje = 100
+                        porcentaje_varietales.append(porcentaje)
+                        total_porcentaje -= porcentaje
+                    else:
+                        porcentaje = random.randint(80, 99)
+                        porcentaje_varietales.append(porcentaje)
+                        total_porcentaje -= porcentaje
+                else:
+                    if total_porcentaje == 1:
+                        porcentaje = 1
+                        porcentaje_varietales.append(porcentaje)
+                        total_porcentaje -= porcentaje
+                    else:
+                        porcentaje = random.randint(1, total_porcentaje - 1)
+                        porcentaje_varietales.append(porcentaje)
+                        total_porcentaje -= porcentaje
+
+            porcentaje_varietales.append(total_porcentaje)
+            maridaje = random.choice(tipo_maridaje)
+
+            nuevo_vino = Vino(
+                nombre=nombre,
+                anada=anada,
+                imagen_etiqueta=imagen_etiqueta,
+                nota_de_cata_bodega=nota_de_cata_bodega,
+                precio=precio,
+                nombreVarietal=nombre_varietales,
+                porcentajeVarietal=porcentaje_varietales,
+                maridaje=maridaje,
+                estado="pendiente",
+                periodo_actualizacion=bodega_seleccionada.periodo_actualizacion,
+                bodega=bodega_seleccionada
+            )
+            bodega_seleccionada.crearVino(nuevo_vino)
+
         self.root.attributes("-topmost", True)  # Reactivar ventana principal como "siempre en primer plano"
-
-        nuevo_vino = Vino(
-            nombre=nombre,
-            anada=anada,
-            imagen_etiqueta=imagen_etiqueta,
-            nota_de_cata_bodega=nota_de_cata_bodega,
-            precio=precio,
-            nombreVarietal=nombre_varietal,
-            porcentajeVarietal=porcentaje_varietales,
-            maridaje=maridaje,
-            estado="pendiente",
-            periodo_actualizacion=bodega_seleccionada.periodo_actualizacion,
-            bodega=bodega_seleccionada
-        )
-        bodega_seleccionada.crearVino(nuevo_vino)
-
-        messagebox.showinfo("Información", "Vino agregado exitosamente!")
+        messagebox.showinfo("Información", f"{cantidad_vinos} vino(s) agregado(s) exitosamente!")
         self.mostrar_vinos()
 
     def set_window_size_and_center(self, width, height):
