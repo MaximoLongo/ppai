@@ -1,7 +1,7 @@
-from gui import VinoApp
+from pantalla import ImportarActualizaciónVinosBodega
 import tkinter as tk
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = VinoApp(root)
+    app = ImportarActualizaciónVinosBodega(root)
     root.mainloop()
